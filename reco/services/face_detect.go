@@ -2,14 +2,10 @@ package services
 
 import (
 	"bytes"
-	"encoding/base64"
-	"image"
-	"image/jpeg"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	pigo "github.com/esimov/pigo/core"
 )
@@ -33,7 +29,7 @@ func FindFaces(baseString string) [][][]int {
 	dets := make([][]int, len(results))
 
 	for i := 0; i < len(results); i++ {
-		dets[i] = append(dets[i], results[i].Row, results[i].Col, results[i].Scale, int(results[i].Q), 0)
+		dets[i] = append(dets[i], results[i].Row, results[i].Col, results[i].Scale, 0)
 
 		puploc := &pigo.Puploc{
 			Row:      results[i].Row - int(0.085*float32(results[i].Scale)),
@@ -43,7 +39,7 @@ func FindFaces(baseString string) [][][]int {
 		}
 		leftEye := puplocClassifier.RunDetector(*puploc, *imgParams, 0.0, false)
 		if leftEye.Row > 0 && leftEye.Col > 0 {
-			dets[i] = append(dets[i], leftEye.Row, leftEye.Col, int(leftEye.Scale), int(results[i].Q), 1)
+			dets[i] = append(dets[i], leftEye.Row, leftEye.Col, int(leftEye.Scale), 1)
 		}
 
 		puploc = &pigo.Puploc{
@@ -55,7 +51,7 @@ func FindFaces(baseString string) [][][]int {
 
 		rightEye := puplocClassifier.RunDetector(*puploc, *imgParams, 0.0, false)
 		if rightEye.Row > 0 && rightEye.Col > 0 {
-			dets[i] = append(dets[i], rightEye.Row, rightEye.Col, int(rightEye.Scale), int(results[i].Q), 1)
+			dets[i] = append(dets[i], rightEye.Row, rightEye.Col, int(rightEye.Scale), 1)
 		}
 		log.Println(dets)
 
@@ -63,12 +59,12 @@ func FindFaces(baseString string) [][][]int {
 			for _, flpc := range flpcs[eye] {
 				flp := flpc.GetLandmarkPoint(leftEye, rightEye, *imgParams, puploc.Perturbs, false)
 				if flp.Row > 0 && flp.Col > 0 {
-					dets[i] = append(dets[i], flp.Row, flp.Col, int(flp.Scale), int(results[i].Q), 2)
+					dets[i] = append(dets[i], flp.Row, flp.Col, int(flp.Scale), 2)
 				}
 
 				flp = flpc.GetLandmarkPoint(leftEye, rightEye, *imgParams, puploc.Perturbs, true)
 				if flp.Row > 0 && flp.Col > 0 {
-					dets[i] = append(dets[i], flp.Row, flp.Col, int(flp.Scale), int(results[i].Q), 2)
+					dets[i] = append(dets[i], flp.Row, flp.Col, int(flp.Scale), 2)
 				}
 			}
 		}
@@ -77,19 +73,19 @@ func FindFaces(baseString string) [][][]int {
 			for _, flpc := range flpcs[mouth] {
 				flp := flpc.GetLandmarkPoint(leftEye, rightEye, *imgParams, puploc.Perturbs, false)
 				if flp.Row > 0 && flp.Col > 0 {
-					dets[i] = append(dets[i], flp.Row, flp.Col, int(flp.Scale), int(results[i].Q), 2)
+					dets[i] = append(dets[i], flp.Row, flp.Col, int(flp.Scale), 2)
 				}
 			}
 		}
 		flp := flpcs["lp84"][0].GetLandmarkPoint(leftEye, rightEye, *imgParams, puploc.Perturbs, true)
 		if flp.Row > 0 && flp.Col > 0 {
-			dets[i] = append(dets[i], flp.Row, flp.Col, int(flp.Scale), int(results[i].Q), 2)
+			dets[i] = append(dets[i], flp.Row, flp.Col, int(flp.Scale), 2)
 		}
 	}
 
 	persons := make([][][]int, len(dets))
 
-	batchSize := 5
+	batchSize := 4
 	for personIndex := range dets {
 		person := dets[personIndex]
 
@@ -109,19 +105,12 @@ func FindFaces(baseString string) [][][]int {
 func clusterDetection(baseString string) []pigo.Detection {
 	pwd, _ := os.Getwd()
 
-	reader := base64.NewDecoder(base64.StdEncoding, strings.NewReader(baseString))
-	m, _, err := image.Decode(reader)
+	imageBytes, err := DecodeBaseImageToBytes(baseString)
 	if err != nil {
-		log.Fatalf("image.Decode: %v", err)
+		log.Fatalf("DecodeBaseImageToBytes %v", err)
 	}
 
-	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, m, nil)
-	if err != nil {
-		log.Fatalf("jpeg.Encode: %v", err)
-	}
-
-	reader = bytes.NewReader(buf.Bytes())
+	reader := bytes.NewReader(imageBytes)
 
 	src, err := pigo.DecodeImage(reader)
 	if err != nil {

@@ -3,13 +3,14 @@ module reco
 go 1.18
 
 require (
+	github.com/esimov/pigo v1.4.5
 	github.com/gin-gonic/gin v1.6.3
 	gorm.io/driver/sqlite v1.3.1
 	gorm.io/gorm v1.23.4
-	github.com/esimov/pigo v1.4.5
 )
 
 require (
+	github.com/Kagami/go-face v0.0.0-20210630145111-0c14797b4d0e // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect
 	github.com/go-playground/universal-translator v0.17.0 // indirect

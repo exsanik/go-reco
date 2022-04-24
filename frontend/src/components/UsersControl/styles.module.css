@@ -1,0 +1,17 @@
+.user {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+    justify-content: center;
+}
+
+.user img {
+    width: 200px;
+    height: 200px;
+}
+
+.userWrapper {
+    display: flex;
+    flex: 1 1 30%;
+}

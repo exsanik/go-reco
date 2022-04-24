@@ -1,0 +1,21 @@
+.webcamContainer video {
+    border-radius: 10px;
+}
+
+.webcamCanvas {
+    position: relative;
+}
+
+.canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.webcamContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
