@@ -27,6 +27,11 @@ func RecognizeFace(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	users, err := models.FindAllUsers(db)
 
+	if len(*users) == 0 {
+		c.JSON(http.StatusOK, gin.H{"data": nil})
+		return
+	}
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

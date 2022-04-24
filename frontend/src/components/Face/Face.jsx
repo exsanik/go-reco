@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { recognizeFace } from "src/api/recognizeFace";
 import { createUser } from "src/api/createUser";
@@ -10,6 +10,10 @@ export const Face = ({ image, onNewUserAdded }) => {
   const [face, setFace] = useState();
   const [saved, setSaved] = useState(false);
   const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    setSaved(false);
+  }, [image, setSaved]);
 
   if (!image) return null;
 
